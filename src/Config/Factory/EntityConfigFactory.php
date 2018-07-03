@@ -14,6 +14,7 @@ use Zend\EntityMapper\Config\ForeignKey;
  * ConfigFactory
  *
  * @package Zend\EntityMapper\Config\Factory
+ *
  */
 class EntityConfigFactory
 {
@@ -108,16 +109,18 @@ class EntityConfigFactory
     }
 
     /**
-     * @param array $fkConfig
+     * @param Config $fkConfig
      * @param Field $field
      */
-    public function mergeForeignKey(array $fkConfig, Field &$field)
+    public function mergeForeignKey(Config $fkConfig, Field &$field)
     {
-        $fkConfig = new Config($fkConfig);
         $foreignKey = new ForeignKey();
 
+        $table = $fkConfig->get('table')[0];
+        $schema = $fkConfig->get('table')[1];
+
         $foreignKey->setEntityClass($fkConfig->get('entityClass'));
-        $foreignKey->setTable($fkConfig->get('table'));
+        $foreignKey->setTable(new TableIdentifier($table, $schema));
         $foreignKey->setJoinClause($fkConfig->get('joinClause'));
 
         $field->setForeignKey($foreignKey);

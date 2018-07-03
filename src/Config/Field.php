@@ -71,6 +71,10 @@ class Field
      */
     public function getAlias(): string
     {
+        if(empty($this->alias)) {
+            return $this->property;
+        }
+
         return $this->alias;
     }
 
@@ -99,6 +103,14 @@ class Field
     }
 
     /**
+     * @return bool
+     */
+    public function hasInputFilter(): bool
+    {
+        return (!empty($this->inputFilter)) && class_exists($this->inputFilter);
+    }
+
+    /**
      * @return string
      */
     public function getOutputFilter(): string
@@ -112,6 +124,14 @@ class Field
     public function setOutputFilter(string $outputFilter)
     {
         $this->outputFilter = $outputFilter;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasOutputFilter(): bool
+    {
+        return (!empty($this->outputFilter)) && class_exists($this->outputFilter);
     }
 
     /**
@@ -131,6 +151,14 @@ class Field
     }
 
     /**
+     * @return bool
+     */
+    public function isForeignKey(): bool
+    {
+        return $this->foreignKey instanceof ForeignKey;
+    }
+
+    /**
      * @return Collection
      */
     public function getCollection(): Collection
@@ -144,5 +172,13 @@ class Field
     public function setCollection(Collection $collection)
     {
         $this->collection = $collection;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCollection(): bool
+    {
+        return $this->collection instanceof Collection;
     }
 }
