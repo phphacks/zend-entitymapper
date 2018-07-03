@@ -4,6 +4,8 @@ namespace Tests\Helper;
 
 use PHPUnit\Framework\TestCase;
 use Zend\Cache\StorageFactory;
+use Zend\EntityMapper\Config\Container\Container;
+use Zend\EntityMapper\Config\Entity;
 use Zend\EntityMapper\Helper\MapLoader;
 
 /**
@@ -14,22 +16,24 @@ use Zend\EntityMapper\Helper\MapLoader;
 class MapLoaderTest extends TestCase
 {
     /**
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
      * @throws \Zend\EntityMapper\Config\Exceptions\ConfigurationException
      */
     public function testMapsLoading()
     {
         $dir = __DIR__ . '/../resources/maps';
 
-        $mapLoader = new MapLoader($dir);
-        $maps = $mapLoader->getMaps();
+        $loader = new MapLoader();
+        $loader->load($dir);
+        $container = new Container();
 
-        $this->assertArrayHasKey('Tests\Mapping\Hydration\CarConfig', $maps);
-        $this->assertArrayHasKey('Tests\Mapping\Hydration\EngineConfig', $maps);
+        $this->assertInstanceOf(Entity::class, $container->get('Tests\Mapping\Hydration\CarConfig'));
+        $this->assertInstanceOf(Entity::class, $container->get('Tests\Mapping\Hydration\EngineConfig'));
     }
 
     /**
      * @throws \Zend\Cache\Exception\ExceptionInterface
-     * @throws \Zend\EntityMapper\Config\Exceptions\ConfigurationException
      */
     public function testMapsStorage()
     {

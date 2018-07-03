@@ -5,7 +5,7 @@ use Tests\Mapping\Hydration\Engine;
 use Zend\EntityMapper\Helper\MapNamer;
 
 return [
-    MapNamer::getNameFor(Car::class) => [
+    Car::class => [
         'schema' => 'Vehicle',
         'table'  => 'Car',
         'fields' => [

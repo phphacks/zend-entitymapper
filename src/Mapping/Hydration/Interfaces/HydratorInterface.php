@@ -7,5 +7,5 @@ use Zend\Hydrator\HydrationInterface;
 
 interface HydratorInterface extends HydrationInterface
 {
-    public function getLocator(): LocatorInterface;
+
 }

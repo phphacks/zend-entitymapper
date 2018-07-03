@@ -2,6 +2,8 @@
 
 namespace Zend\EntityMapper\Mapping\Hydration;
 
+use Zend\EntityMapper\Config\Container\Container;
+use Zend\EntityMapper\Config\Entity;
 use Zend\EntityMapper\Mapping\Hydration\Interfaces\HydratorInterface;
 use Zend\EntityMapper\Mapping\Locator\Interfaces\LocatorInterface;
 use Zend\Filter\FilterInterface;
@@ -14,35 +16,19 @@ use Zend\Filter\FilterInterface;
 class Hydrator implements HydratorInterface
 {
     /**
-     * @var LocatorInterface
-     */
-    private $locator;
-
-    /**
-     * Hydrator constructor.
-     * @param LocatorInterface $locator
-     */
-    public function __construct(LocatorInterface $locator)
-    {
-        $this->locator = $locator;
-    }
-
-    /**
-     * @return LocatorInterface
-     */
-    public function getLocator(): LocatorInterface
-    {
-        return $this->locator;
-    }
-
-    /**
      * @param array $data
      * @param object $object
      * @return object
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
      */
     public function hydrate(array $data, $object)
     {
-        $config = $this->getLocator()->locateConfigFor(get_class($object));
+        $container = new Container();
+
+        /** @var Entity $config */
+        $config = $container->get(get_class($object));
+
         $reflectionObject = new \ReflectionObject($object);
         $objectProperties = $reflectionObject->getProperties();
 

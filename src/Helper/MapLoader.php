@@ -1,6 +1,9 @@
 <?php
 
 namespace Zend\EntityMapper\Helper;
+
+use Zend\Cache\StorageFactory;
+use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Factory\EntityConfigFactory;
 
 /**
@@ -11,30 +14,25 @@ use Zend\EntityMapper\Config\Factory\EntityConfigFactory;
 class MapLoader
 {
     /**
-     * @var array
+     * @var Container
      */
-    private $maps = [];
+    private $maps;
 
     /**
      * MapLoader constructor.
-     *
-     * @param string $directory
-     * @throws \Zend\EntityMapper\Config\Exceptions\ConfigurationException
+     * @throws \Zend\Cache\Exception\ExceptionInterface
      */
-    public function __construct(string $directory)
+    public function __construct()
     {
-        if(!is_dir($directory)) {
-            throw new \InvalidArgumentException();
-        }
-
-        $this->load($directory);
+        $this->maps = new Container();
     }
 
     /**
      * @param string $directory
+     * @throws \Zend\Cache\Exception\ExceptionInterface
      * @throws \Zend\EntityMapper\Config\Exceptions\ConfigurationException
      */
-    private function load(string $directory): void
+    public function load(string $directory): void
     {
         $items = scandir($directory);
         $links = ['..', '.'];
@@ -47,19 +45,22 @@ class MapLoader
                 foreach ($configArray as $name => $config) {
                     $entityConfigFactory = new EntityConfigFactory($config);
                     $entityConfig = $entityConfigFactory->getConfig();
-                    $this->maps[$name] = $entityConfig;
+
+                    if(!$this->maps->has($name)) {
+                        $this->maps->set($name, $entityConfig);
+                        $this->maps->save();
+                    }
                 }
             } else if(!in_array($item, $links)) {
                 $this->load($path);
             }
         }
-
     }
 
     /**
-     * @return array
+     * @return Container
      */
-    public function getMaps(): array
+    public function getMaps(): Container
     {
         return $this->maps;
     }
