@@ -5,6 +5,7 @@ namespace Zend\EntityMapper\Config\Container;
 use Zend\Cache\Storage\StorageInterface;
 use Zend\Cache\StorageFactory;
 use Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException;
+use Zend\EntityMapper\Config\Entity;
 
 /**
  * Container
@@ -58,7 +59,7 @@ class Container
      * @return mixed
      * @throws ItemNotFoundException
      */
-    public function get($id)
+    public function get($id): Entity
     {
         if (!$this->has($id)) {
             throw new ItemNotFoundException("$id not found.");

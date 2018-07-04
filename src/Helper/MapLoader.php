@@ -46,10 +46,10 @@ class MapLoader
                     $entityConfigFactory = new EntityConfigFactory($config);
                     $entityConfig = $entityConfigFactory->getConfig();
 
-                    if(!$this->maps->has($name)) {
-                        $this->maps->set($name, $entityConfig);
-                        $this->maps->save();
-                    }
+
+                    $this->maps->set($name, $entityConfig);
+                    $this->maps->save();
+
                 }
             } else if(!in_array($item, $links)) {
                 $this->load($path);

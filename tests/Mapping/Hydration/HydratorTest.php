@@ -17,7 +17,7 @@ class HydratorTest extends TestCase
 
     public function setUp()
     {
-        $this->engine = ['pistons' => 8, 'cm3' => 3.2, 'horsepower' => 380];
+        $this->engine = ['pistons' => 8, 'cm3' => 3.2, 'hp' => 380];
         $this->car    = ['brand' => 'volkswagen', 'model' => 'touareg', 'engine' => $this->engine];
     }
 
@@ -32,7 +32,7 @@ class HydratorTest extends TestCase
 
         $this->assertEquals($object->pistons,    $this->engine['pistons']);
         $this->assertEquals($object->cm3,        $this->engine['cm3']);
-        $this->assertEquals($object->horsepower, $this->engine['horsepower']);
+        $this->assertEquals($object->horsepower, $this->engine['hp']);
     }
 
     /**
@@ -47,7 +47,7 @@ class HydratorTest extends TestCase
         $this->assertInstanceOf(Engine::class, $object->engine);
         $this->assertEquals($object->engine->pistons,    $this->engine['pistons']);
         $this->assertEquals($object->engine->cm3,        $this->engine['cm3']);
-        $this->assertEquals($object->engine->horsepower, $this->engine['horsepower']);
+        $this->assertEquals($object->engine->horsepower, $this->engine['hp']);
     }
 
 
