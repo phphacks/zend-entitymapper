@@ -45,11 +45,22 @@ class SelectReflector
      * @param string $name
      * @return mixed
      */
-    private function getProperty(string $name)
+    public function getProperty(string $name)
     {
         $property = $this->reflection->getProperty($name);
         $property->setAccessible(true);
         return $property->getValue($this->select);
+    }
+
+    /**
+     * @param string $name
+     * @param $value
+     */
+    public function setProperty(string $name, $value): void
+    {
+        $property = $this->reflection->getProperty($name);
+        $property->setAccessible(true);
+        $property->setValue($this->select, $value);
     }
 
     /**

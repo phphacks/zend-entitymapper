@@ -39,7 +39,7 @@ class SelectParsingTest extends TestCase
         $sql = new Select();
         $sql->columns(['hpower' => 'horsepower', 'pistons'])
             ->from(['a' => Engine::class])
-            ->join(['b' => Engine::class], 'a.id = b.id', [])
+            ->join(['b' => Engine::class], 'a.horsepower = b.horsepower', ['horsepower'])
             ->where
                 ->greaterThan('horsepower', 200)
                 ->and->lessThan('cm3', 2.0);
@@ -150,5 +150,32 @@ class SelectParsingTest extends TestCase
         $order = $order->getValue($select);
 
         $this->assertEquals($order[0], 'hp DESC');
+    }
+
+    public function testParsingJoinClauses()
+    {
+        $parser = new SelectParser($this->select);
+        $parser->parseFrom();
+        $parser->parseColumns();
+        $parser->parseWhere();
+        $parser->parseFrom();
+
+        $select = $parser->parseJoin();
+
+        $selectReflection = new \ReflectionObject($select);
+        $joinsProperty = $selectReflection->getProperty('joins');
+        $joinsProperty->setAccessible(true);
+        $joins = $joinsProperty->getValue($select);
+
+        $joinsReflection = new \ReflectionObject($joins);
+        $joinsProperty = $joinsReflection->getProperty('joins');
+        $joinsProperty->setAccessible(true);
+        $joinsArray = $joinsProperty->getValue($joins);
+
+        $clause = $joinsArray[0];
+        $on = $clause['on'];
+
+        $this->assertNotEmpty($joinsArray);
+        $this->assertEquals($on, 'a.hp = b.hp');
     }
 }

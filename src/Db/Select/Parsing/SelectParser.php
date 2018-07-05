@@ -5,6 +5,7 @@ namespace Zend\EntityMapper\Db\Select\Parsing;
 use Zend\Db\Sql\Select;
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Entity;
+use Zend\EntityMapper\Db\Select\Reflection\JoinReflector;
 use Zend\EntityMapper\Db\Select\Reflection\OperatorReflector;
 use Zend\EntityMapper\Db\Select\Reflection\SelectReflector;
 
@@ -169,6 +170,56 @@ class SelectParser
         $order->setValue($select, $parsedOrders);
 
         return $select;
+    }
 
+    /**
+     * @return Select
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    public function parseJoin(): Select
+    {
+        $joins = $this->reflector->getProperty('joins');
+        $joinReflector = new JoinReflector($joins);
+        $joinClauses = $joinReflector->getJoinClauses();
+        $parsedJoinClauses = [];
+
+        foreach ($joinClauses as $joinClause) {
+
+            $tableName = null;
+            $rawObjectName = $joinClause['name'];
+
+            if(is_array($rawObjectName)) {
+                foreach ($rawObjectName as $alias => $class) {
+                    $config = $this->container->get($class);
+                    $joinClause['name'] = [$alias => $config->getTable()];
+                    $fields = $config->getFields();
+                }
+            }
+            else {
+                $config = $this->container->get($rawObjectName);
+                $fields = $config->getFields();
+            }
+
+            foreach ($fields as $field) {
+                $joinClause['on'] = str_replace($field->getProperty(), $field->getAlias(), $joinClause['on']);
+
+                foreach ($joinClause['columns'] as $key => $column) {
+                    $joinClause['columns'][$key] = str_replace($field->getProperty(), $field->getAlias(), $joinClause['columns'][$key]);
+                }
+            }
+
+            $parsedJoinClauses[] = $joinClause;
+
+        }
+
+        $joinsReflection = new \ReflectionObject($joins);
+        $joinsReflectorJoinsProperty = $joinsReflection->getProperty('joins');
+        $joinsReflectorJoinsProperty->setAccessible(true);
+        $joinsReflectorJoinsProperty->setValue($joins, $parsedJoinClauses);
+
+        $this->reflector->setProperty('joins', $joins);
+        $select = $this->reflector->getSelect();
+
+        return $select;
     }
 }
