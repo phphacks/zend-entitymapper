@@ -5,7 +5,6 @@ namespace Zend\EntityMapper\Mapping\Hydration;
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Entity;
 use Zend\EntityMapper\Mapping\Hydration\Interfaces\HydratorInterface;
-use Zend\EntityMapper\Mapping\Locator\Interfaces\LocatorInterface;
 use Zend\Filter\FilterInterface;
 
 /**

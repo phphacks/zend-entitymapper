@@ -9,16 +9,13 @@ use Zend\EntityMapper\Db\Select\Parsing\Base\AbstractObjectParser;
  *
  * @package Zend\EntityMapper\Db\Select\Parsing
  */
-class UpdateParser extends AbstractObjectParser
+class DeleteParser extends AbstractObjectParser
 {
     /**
      * @return array
      */
     public function parse(): array
     {
-        return [
-            'fields' => $this->parseFields(),
-            'where'  => $this->parseWhere()
-        ];
+        return $this->parseWhere();
     }
 }
