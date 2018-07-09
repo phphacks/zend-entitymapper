@@ -51,6 +51,11 @@ class Field
     protected $collection;
 
     /**
+     * @var bool
+     */
+    protected $primaryKey;
+
+    /**
      * @return string
      */
     public function getProperty(): string
@@ -180,5 +185,21 @@ class Field
     public function isCollection(): bool
     {
         return $this->collection instanceof Collection;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPrimaryKey(): bool
+    {
+        return $this->primaryKey === true;
+    }
+
+    /**
+     * @param bool $primaryKey
+     */
+    public function setPrimaryKey($primaryKey)
+    {
+        $this->primaryKey = $primaryKey;
     }
 }

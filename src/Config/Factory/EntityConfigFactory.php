@@ -87,6 +87,7 @@ class EntityConfigFactory
         $config = new Config($fieldConfig);
 
         /* setup field */
+        $field->setPrimaryKey($config->get('primaryKey'));
         $field->setProperty($config->get('property', ''));
         $field->setAlias($config->get('alias', ''));
         $field->setInputFilter($config->get('inputFilter', ''));

@@ -1,20 +1,19 @@
 <?php
 
-namespace Tests\Db\Select\Parsing;
+namespace Zend\EntityMapper\Db\Select\Parsing;
 
 use PHPUnit\Framework\TestCase;
 use Tests\Mapping\Hydration\Car;
 use Tests\Mapping\Hydration\Engine;
 use Zend\EntityMapper\Config\Container\Container;
-use Zend\EntityMapper\Db\Select\Parsing\InsertParser;
 use Zend\EntityMapper\Helper\MapLoader;
 
 /**
- * Class InsertParsingTest
+ * UpdateParserTest
  *
- * @package Tests\Db\Select\Parsing
+ * @package Zend\EntityMapper\Db\Select\Parsing
  */
-class InsertParsingTest extends TestCase
+class UpdateParserTest extends TestCase
 {
     private $container;
 
@@ -40,17 +39,19 @@ class InsertParsingTest extends TestCase
         $car->brand = 'Volkswagen';
         $car->model = ' Jetta';
 
-        $insertParser = new InsertParser($this->container, $car);
-        $insertParser->parse();
+        $updateParser = new UpdateParser($this->container, $car);
+        $updateParser->parse();
 
         $engine = new Engine();
+        $engine->id = 1;
         $engine->horsepower = 250;
         $engine->pistons = 5;
         $engine->cm3 = 3000;
 
-        $insertParser = new InsertParser($this->container, $engine);
-        $engineArray = $insertParser->parse();
+        $updateParser = new UpdateParser($this->container, $engine);
+        $engineArray = $updateParser->parse();
 
-        $this->assertArrayHasKey('hp', $engineArray);
+        $this->assertCount(4, $engineArray['fields']);
+        $this->assertCount(1, $engineArray['where']);
     }
 }

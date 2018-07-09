@@ -63,7 +63,8 @@ class Hydrator implements HydratorInterface
                 continue;
             }
 
-            $property->setValue($object, $data[$propertyAlias]);
+            if(isset($data[$propertyAlias]))
+                $property->setValue($object, $data[$propertyAlias]);
         }
 
         return $object;

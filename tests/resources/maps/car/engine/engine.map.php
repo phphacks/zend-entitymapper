@@ -9,6 +9,7 @@ return [
         E::SCHEMA => 'Vehicle',
         E::TABLE  => 'Engine',
         E::FIELDS => [
+            [P::PROPERTY => 'id', 'primaryKey' => true],
             [P::PROPERTY => 'pistons'],
             [P::PROPERTY => 'cm3'],
             [P::PROPERTY => 'horsepower', P::ALIAS => 'hp']
