@@ -3,6 +3,8 @@
 namespace Tests\Mapping\Hydration;
 
 use PHPUnit\Framework\TestCase;
+use Zend\Db\TableGateway\Feature\FeatureSet;
+use Zend\Db\TableGateway\TableGateway;
 use Zend\EntityMapper\Mapping\Hydration\Hydrator;
 
 /**
@@ -49,6 +51,4 @@ class HydratorTest extends TestCase
         $this->assertEquals($object->engine->cm3,        $this->engine['cm3']);
         $this->assertEquals($object->engine->horsepower, $this->engine['hp']);
     }
-
-
 }

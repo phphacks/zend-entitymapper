@@ -4,6 +4,11 @@ namespace Zend\EntityMapper\Db\Select\Reflection;
 
 use Zend\Db\Sql\Join;
 
+/**
+ * JoinReflector
+ *
+ * @package Zend\EntityMapper\Db\Select\Reflection
+ */
 class JoinReflector
 {
     private $join;
