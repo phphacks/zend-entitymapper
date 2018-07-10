@@ -5,6 +5,7 @@ namespace Zend\EntityMapper\Config\Factory;
 use Zend\Config\Config;
 use Zend\Db\Sql\TableIdentifier;
 use Zend\EntityMapper\Config\Collection;
+use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Entity;
 use Zend\EntityMapper\Config\Exceptions\ConfigurationException;
 use Zend\EntityMapper\Config\Field;
@@ -87,7 +88,7 @@ class EntityConfigFactory
         $config = new Config($fieldConfig);
 
         /* setup field */
-        $field->setPrimaryKey($config->get('primaryKey'));
+        $field->setPrimaryKey($config->get('primaryKey', false));
         $field->setProperty($config->get('property', ''));
         $field->setAlias($config->get('alias', ''));
         $field->setInputFilter($config->get('inputFilter', ''));
@@ -112,17 +113,21 @@ class EntityConfigFactory
     /**
      * @param Config $fkConfig
      * @param Field $field
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
      */
     public function mergeForeignKey(Config $fkConfig, Field &$field)
     {
         $foreignKey = new ForeignKey();
+        $container = new Container();
 
-        $table = $fkConfig->get('table')[0];
-        $schema = $fkConfig->get('table')[1];
+        $entity = $fkConfig->get('entityClass', '');
+        $entityConfig = $container->get($entity);
 
-        $foreignKey->setEntityClass($fkConfig->get('entityClass'));
-        $foreignKey->setTable(new TableIdentifier($table, $schema));
+        $foreignKey->setTable($entityConfig->getTable());
+        $foreignKey->setEntityClass($fkConfig->get('entityClass', ''));
         $foreignKey->setJoinClause($fkConfig->get('joinClause'));
+        $foreignKey->setJoinAlias($fkConfig->get('joinAlias'));
 
         $field->setForeignKey($foreignKey);
     }

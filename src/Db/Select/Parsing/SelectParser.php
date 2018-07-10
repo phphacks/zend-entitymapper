@@ -2,9 +2,11 @@
 
 namespace Zend\EntityMapper\Db\Select\Parsing;
 
+use Zend\Db\Sql\Expression;
 use Zend\Db\Sql\Select;
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Entity;
+use Zend\EntityMapper\Config\ForeignKey;
 use Zend\EntityMapper\Db\Select\Reflection\JoinReflector;
 use Zend\EntityMapper\Db\Select\Reflection\OperatorReflector;
 use Zend\EntityMapper\Db\Select\Reflection\SelectReflector;
@@ -105,16 +107,46 @@ class SelectParser
      */
     public function parseColumns(): Select
     {
-        $map = $this->getMap();
+        $fields = $this->container->get($this->entity)->getFields();
+        $columns = $this->reflector->getColumns();
+        $parsedColumns = [];
 
-        $columns = [];
+        foreach ($columns as $columnName) {
+            $value = null;
+            $levels = explode('.', $columnName);
+            $config = $this->container->get($this->entity);
+            $foreignKey = null;
+            foreach ($levels as $column) {
+                $field = $config->getField($column);
 
-        foreach ($this->reflector->getColumns() as $columnAlias => $column) {
-            $propertyAlias = $map->getField($column)->getAlias();
-            $columns[$columnAlias] = $propertyAlias;
+                if($field->isForeignKey()) {
+                    $foreignKey = $field->getForeignKey();
+                    $config = $this->container->get($foreignKey->getEntityClass());
+                }
+                else if($field->isCollection()) {
+
+                }
+                else
+                {
+                    $schema = $config->getTable()->getSchema();
+                    $table = $config->getTable()->getTable();
+                    $column = $field->getAlias();
+
+                    if($foreignKey instanceof ForeignKey) {
+                        $value = new Expression($foreignKey->getJoinAlias() . '.' . $column);
+                    }
+                    else
+                    {
+                        $value = new Expression($schema . '.' . $table . '.' . $column);
+                    }
+                }
+            }
+
+            $parsedColumns[$columnName] = $value;
         }
 
-        $this->reflector->setColumns($columns);
+        $this->reflector->setColumns($parsedColumns);
+
         return $this->reflector->getSelect();
     }
 

@@ -3,8 +3,10 @@
 namespace Tests\Db\Select\Parsing;
 
 use PHPUnit\Framework\TestCase;
+use Tests\Mapping\Hydration\Car;
 use Tests\Mapping\Hydration\Engine;
 use Zend\Db\Adapter\Adapter;
+use Zend\Db\Sql\Expression;
 use Zend\Db\Sql\Platform\Platform;
 use Zend\Db\Sql\Select;
 use Zend\EntityMapper\Config\Container\Container;
@@ -85,17 +87,11 @@ class SelectParsingTest extends TestCase
         $reflector = new SelectReflector($select);
         $parsedColumns = $reflector->getColumns();
 
-
-        $config = $this->container->get(Engine::class);
-        $configuredColumns = $config->getFields();
-
         $equals = 0;
 
         foreach ($parsedColumns as $column) {
-            foreach ($configuredColumns as $field) {
-                if($column == $field->getAlias()) {
-                    $equals++;
-                }
+            if($column instanceof Expression) {
+                $equals++;
             }
         }
 
@@ -152,6 +148,10 @@ class SelectParsingTest extends TestCase
         $this->assertEquals($order[0], 'hp DESC');
     }
 
+    /**
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
     public function testParsingJoinClauses()
     {
         $parser = new SelectParser($this->select);
@@ -177,5 +177,22 @@ class SelectParsingTest extends TestCase
 
         $this->assertNotEmpty($joinsArray);
         $this->assertEquals($on, 'a.hp = b.hp');
+    }
+
+    /**
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    public function testNamespacedColumnsSelect()
+    {
+        $select = new Select();
+        $select->columns(['brand', 'engine.horsepower']);
+        $select->from(Car::class);
+
+        $parser = new SelectParser($select);
+        $parser->parseFrom();
+        $select = $parser->parseColumns();
+
+        $this->assertInstanceOf(Select::class, $select);
     }
 }

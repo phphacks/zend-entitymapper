@@ -29,6 +29,11 @@ class ForeignKey
     protected $joinClause;
 
     /**
+     * @var string
+     */
+    protected $joinAlias;
+
+    /**
      * @return string
      */
     public function getEntityClass(): string
@@ -74,5 +79,21 @@ class ForeignKey
     public function setJoinClause(string $joinClause)
     {
         $this->joinClause = $joinClause;
+    }
+
+    /**
+     * @return string
+     */
+    public function getJoinAlias(): string
+    {
+        return $this->joinAlias;
+    }
+
+    /**
+     * @param string $joinAlias
+     */
+    public function setJoinAlias(string $joinAlias)
+    {
+        $this->joinAlias = $joinAlias;
     }
 }

@@ -56,6 +56,11 @@ class Field
     protected $primaryKey;
 
     /**
+     * @var string
+     */
+    protected $entityClass;
+
+    /**
      * @return string
      */
     public function getProperty(): string
@@ -201,5 +206,21 @@ class Field
     public function setPrimaryKey($primaryKey)
     {
         $this->primaryKey = $primaryKey;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEntityClass(): string
+    {
+        return $this->entityClass;
+    }
+
+    /**
+     * @param string $entityClass
+     */
+    public function setEntityClass(string $entityClass)
+    {
+        $this->entityClass = $entityClass;
     }
 }

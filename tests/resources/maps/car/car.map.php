@@ -13,9 +13,9 @@ return [
             ['property' => 'model'],
             ['property' => 'engine',
                 'foreignKey' => [
-                    'table'       => ['Car', 'Vehicle'],
                     'entityClass' => Engine::class,
-                    'joinClause'  => 'clause'
+                    'joinClause'  => 'clause',
+                    'joinAlias'   => 'engine'
                 ]
             ]
         ]
