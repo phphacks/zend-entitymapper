@@ -134,7 +134,7 @@ class SelectParsingTest extends TestCase
         $order->setAccessible(true);
         $order = $order->getValue($select);
 
-        $this->assertEquals($order[0], 'hp DESC');
+        $this->assertEquals($order[0], 'horsepower DESC');
     }
 
     /**

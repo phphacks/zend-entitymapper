@@ -168,24 +168,16 @@ class SelectParser
 
     /**
      * @return Select
-     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
      */
     public function parseWhere(): Select
     {
         $predicates = $this->reflector->getWherePredicates();
-        $map = $this->getMap();
 
         foreach ($predicates as $predicate) {
             $reflection = new OperatorReflector($predicate[1]);
-            $identifiers = $reflection->getIdentifiers();
-            $fields = $map->getFields();
-
-            foreach ($fields as $field) {
-                if(in_array($field->getProperty(), $identifiers)) {
-                    $predicate[1] = $reflection->replaceIdentifier($field->getProperty(), $field->getAlias());
-                }
+            foreach ($this->fieldAliases as $property => $column) {
+                $reflection->replaceIdentifier($property, $column);
             }
-
         }
 
         return $this->reflector->getSelect();
@@ -193,7 +185,6 @@ class SelectParser
 
     /**
      * @return Select
-     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
      */
     public function parseOrder(): Select
     {
@@ -201,12 +192,9 @@ class SelectParser
         $parsedOrders = [];
 
         foreach ($orders as $order) {
-            $fields = $this->getMap()->getFields();
-
-            foreach ($fields as $field) {
-                $order = str_replace($field->getProperty(), $field->getAlias(), $order);
+            foreach ($this->fieldAliases as $property => $column) {
+                str_replace($property, $column, $order);
             }
-
             $parsedOrders[] = $order;
         }
 
