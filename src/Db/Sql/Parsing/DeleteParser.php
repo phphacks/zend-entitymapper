@@ -1,13 +1,13 @@
 <?php
 
-namespace Zend\EntityMapper\Db\Select\Parsing;
+namespace Zend\EntityMapper\Db\Sql\Parsing;
 
-use Zend\EntityMapper\Db\Select\Parsing\Base\AbstractObjectParser;
+use Zend\EntityMapper\Db\Sql\Parsing\Base\AbstractObjectParser;
 
 /**
  * UpdateParser
  *
- * @package Zend\EntityMapper\Db\Select\Parsing
+ * @package Zend\EntityMapper\Db\Sql\Parsing
  */
 class DeleteParser extends AbstractObjectParser
 {

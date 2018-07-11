@@ -34,6 +34,11 @@ class ForeignKey
     protected $joinAlias;
 
     /**
+     * @var string
+     */
+    protected $joinType;
+
+    /**
      * @return string
      */
     public function getEntityClass(): string
@@ -96,4 +101,5 @@ class ForeignKey
     {
         $this->joinAlias = $joinAlias;
     }
+
 }

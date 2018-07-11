@@ -1,12 +1,12 @@
 <?php
 
-namespace Tests\Db\Select\Parsing;
+namespace Tests\Db\Sql\Parsing;
 
 use PHPUnit\Framework\TestCase;
 use Tests\Mapping\Hydration\Car;
 use Tests\Mapping\Hydration\Engine;
 use Zend\EntityMapper\Config\Container\Container;
-use Zend\EntityMapper\Db\Select\Parsing\InsertParser;
+use Zend\EntityMapper\Db\Sql\Parsing\DeleteParser;
 use Zend\EntityMapper\Helper\MapLoader;
 
 /**
@@ -14,7 +14,7 @@ use Zend\EntityMapper\Helper\MapLoader;
  *
  * @package Tests\Db\Select\Parsing
  */
-class InsertParsingTest extends TestCase
+class DeleteParsingTest extends TestCase
 {
     private $container;
 
@@ -33,24 +33,25 @@ class InsertParsingTest extends TestCase
     /**
      * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
      */
-    public function testInsertParsing()
+    public function testDeleteParsing()
     {
         $car = new Car();
         $car->engine = new Engine();
         $car->brand = 'Volkswagen';
         $car->model = ' Jetta';
 
-        $insertParser = new InsertParser($this->container, $car);
+        $insertParser = new DeleteParser($this->container, $car);
         $insertParser->parse();
 
         $engine = new Engine();
+        $engine->id = 1;
         $engine->horsepower = 250;
         $engine->pistons = 5;
         $engine->cm3 = 3000;
 
-        $insertParser = new InsertParser($this->container, $engine);
+        $insertParser = new DeleteParser($this->container, $engine);
         $engineArray = $insertParser->parse();
 
-        $this->assertArrayHasKey('hp', $engineArray);
+        $this->assertArrayHasKey('id', $engineArray);
     }
 }

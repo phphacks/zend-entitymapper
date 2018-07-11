@@ -1,6 +1,6 @@
 <?php
 
-namespace Zend\EntityMapper\Db\Select\Reflection;
+namespace Zend\EntityMapper\Db\Sql\Reflection;
 
 use Zend\Db\Sql\Predicate\Operator;
 use Zend\Db\Sql\Where;
@@ -8,7 +8,7 @@ use Zend\Db\Sql\Where;
 /**
  * WhereReflector
  *
- * @package Zend\EntityMapper\Db\Select\Reflection
+ * @package Zend\EntityMapper\Db\Sql\Reflection
  */
 class OperatorReflector
 {

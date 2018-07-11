@@ -28,27 +28,29 @@ class MapLoaderTest extends TestCase
         $loader->load($dir);
         $container = new Container();
 
-        $this->assertInstanceOf(Entity::class, $container->get('Tests\Mapping\Hydration\CarConfig'));
-        $this->assertInstanceOf(Entity::class, $container->get('Tests\Mapping\Hydration\EngineConfig'));
+        $this->assertInstanceOf(Entity::class, $container->get('Tests\Mapping\Hydration\Car'));
+        $this->assertInstanceOf(Entity::class, $container->get('Tests\Mapping\Hydration\Engine'));
     }
 
     /**
      * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Exceptions\ConfigurationException
      */
     public function testMapsStorage()
     {
         $dir = __DIR__ . '/../resources/maps';
-        $mapLoader = new MapLoader($dir);
+        $mapLoader = new MapLoader();
+        $mapLoader->load($dir);
         $maps = $mapLoader->getMaps();
 
         $storage = StorageFactory::adapterFactory('filesystem');
-        $storage->addItem('maps', serialize($maps));
+        $storage->setItem('maps', serialize($maps));
 
         $storage = StorageFactory::adapterFactory('filesystem');
         $restoredMaps = $storage->getItem('maps');
         $restoredMaps = unserialize($restoredMaps);
 
-        $this->assertArrayHasKey('Tests\Mapping\Hydration\CarConfig', $restoredMaps);
-        $this->assertArrayHasKey('Tests\Mapping\Hydration\EngineConfig', $restoredMaps);
+        $this->assertTrue($restoredMaps->has('Tests\Mapping\Hydration\Car'));
+        $this->assertTrue($restoredMaps->has('Tests\Mapping\Hydration\Engine'));
     }
 }

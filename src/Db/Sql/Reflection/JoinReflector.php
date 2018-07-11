@@ -1,13 +1,13 @@
 <?php
 
-namespace Zend\EntityMapper\Db\Select\Reflection;
+namespace Zend\EntityMapper\Db\Sql\Reflection;
 
 use Zend\Db\Sql\Join;
 
 /**
  * JoinReflector
  *
- * @package Zend\EntityMapper\Db\Select\Reflection
+ * @package Zend\EntityMapper\Db\Sql\Reflection
  */
 class JoinReflector
 {

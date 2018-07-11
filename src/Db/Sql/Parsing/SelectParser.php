@@ -1,20 +1,20 @@
 <?php
 
-namespace Zend\EntityMapper\Db\Select\Parsing;
+namespace Zend\EntityMapper\Db\Sql\Parsing;
 
 use Zend\Db\Sql\Expression;
 use Zend\Db\Sql\Select;
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Entity;
 use Zend\EntityMapper\Config\ForeignKey;
-use Zend\EntityMapper\Db\Select\Reflection\JoinReflector;
-use Zend\EntityMapper\Db\Select\Reflection\OperatorReflector;
-use Zend\EntityMapper\Db\Select\Reflection\SelectReflector;
+use Zend\EntityMapper\Db\Sql\Reflection\JoinReflector;
+use Zend\EntityMapper\Db\Sql\Reflection\OperatorReflector;
+use Zend\EntityMapper\Db\Sql\Reflection\SelectReflector;
 
 /**
  * SelectParser
  *
- * @package Zend\EntityMapper\Db\Select\Parsing
+ * @package Zend\EntityMapper\Db\Sql\Parsing
  */
 class SelectParser
 {
@@ -44,10 +44,15 @@ class SelectParser
     private $map;
 
     /**
+     * @var array
+     */
+    private $fieldAliases;
+
+    /**
      * SelectParser constructor.
-     *
      * @param Select $select
      * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
      */
     public function __construct(Select $select)
     {
@@ -63,11 +68,53 @@ class SelectParser
             }
         }
 
-
         if(is_string($entity) && class_exists($entity)) {
             $this->entity = $entity;
         }
 
+        $this->loadFieldAliases();
+
+        echo null;
+    }
+
+    /**
+     * @param null $entity
+     * @param null $namespace
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    public function loadFieldAliases($entity = null, $namespace = null, $fk = null): void
+    {
+        if (is_null($entity)) {
+            $entity = $this->entity;
+        }
+
+        $joinAlias = null;
+        if ($fk instanceof ForeignKey) {
+            $joinAlias = $fk->getJoinAlias() . '.';
+        }
+
+        $config = $this->container->get($entity);
+        $fields = $config->getFields();
+
+        foreach ($fields as $field) {
+
+            if(empty($namespace)) {
+                $namespace = $field->getProperty();
+            }
+            else {
+                $namespace .= '.' . $field->getProperty();
+            }
+
+            if($field->isForeignKey()) {
+                $entity = $field->getForeignKey()->getEntityClass();
+                $this->loadFieldAliases($entity, $namespace, $field->getForeignKey());
+            }
+            else if(!$field->isCollection()) {
+                $this->fieldAliases[$namespace] = $joinAlias . $field->getAlias();
+            }
+
+            $namespace = null;
+        }
     }
 
     /**
@@ -103,49 +150,18 @@ class SelectParser
 
     /**
      * @return Select
-     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
      */
     public function parseColumns(): Select
     {
-        $fields = $this->container->get($this->entity)->getFields();
         $columns = $this->reflector->getColumns();
-        $parsedColumns = [];
 
-        foreach ($columns as $columnName) {
-            $value = null;
-            $levels = explode('.', $columnName);
-            $config = $this->container->get($this->entity);
-            $foreignKey = null;
-            foreach ($levels as $column) {
-                $field = $config->getField($column);
-
-                if($field->isForeignKey()) {
-                    $foreignKey = $field->getForeignKey();
-                    $config = $this->container->get($foreignKey->getEntityClass());
-                }
-                else if($field->isCollection()) {
-
-                }
-                else
-                {
-                    $schema = $config->getTable()->getSchema();
-                    $table = $config->getTable()->getTable();
-                    $column = $field->getAlias();
-
-                    if($foreignKey instanceof ForeignKey) {
-                        $value = new Expression($foreignKey->getJoinAlias() . '.' . $column);
-                    }
-                    else
-                    {
-                        $value = new Expression($schema . '.' . $table . '.' . $column);
-                    }
-                }
+        foreach ($columns as $alias => $column) {
+            if(isset($this->fieldAliases[$column])) {
+                $columns[$alias] = $this->fieldAliases[$column];
             }
-
-            $parsedColumns[$columnName] = $value;
         }
 
-        $this->reflector->setColumns($parsedColumns);
+        $this->reflector->setColumns($columns);
 
         return $this->reflector->getSelect();
     }
@@ -251,6 +267,7 @@ class SelectParser
 
         $this->reflector->setProperty('joins', $joins);
         $select = $this->reflector->getSelect();
+
 
         return $select;
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Zend\EntityMapper\Db\Select\Parsing;
+namespace Zend\EntityMapper\Db\Sql\Parsing;
 
 use PHPUnit\Framework\TestCase;
 use Tests\Mapping\Hydration\Car;
@@ -11,7 +11,7 @@ use Zend\EntityMapper\Helper\MapLoader;
 /**
  * UpdateParserTest
  *
- * @package Zend\EntityMapper\Db\Select\Parsing
+ * @package Zend\EntityMapper\Db\Sql\Parsing
  */
 class UpdateParserTest extends TestCase
 {

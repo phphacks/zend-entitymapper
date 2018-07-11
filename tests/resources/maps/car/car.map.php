@@ -13,6 +13,7 @@ return [
             ['property' => 'model'],
             ['property' => 'engine',
                 'foreignKey' => [
+                    'table'       => new \Zend\Db\Sql\TableIdentifier('Engine', 'Vehicle'),
                     'entityClass' => Engine::class,
                     'joinClause'  => 'clause',
                     'joinAlias'   => 'engine'

@@ -1,6 +1,6 @@
 <?php
 
-namespace Zend\EntityMapper\Db\Select\Parsing\Base;
+namespace Zend\EntityMapper\Db\Sql\Parsing\Base;
 
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Entity;

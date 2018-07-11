@@ -1,6 +1,6 @@
 <?php
 
-namespace Zend\EntityMapper\Db\Select\Reflection;
+namespace Zend\EntityMapper\Db\Sql\Reflection;
 
 use Zend\Db\Sql\Select;
 use Zend\Db\Sql\TableIdentifier;
@@ -8,7 +8,7 @@ use Zend\Db\Sql\TableIdentifier;
 /**
  * SelectReflector
  *
- * @package Zend\EntityMapper\Db\Select\Reflection
+ * @package Zend\EntityMapper\Db\Sql\Reflection
  */
 class SelectReflector
 {

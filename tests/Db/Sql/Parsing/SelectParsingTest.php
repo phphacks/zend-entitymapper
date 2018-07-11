@@ -1,18 +1,15 @@
 <?php
 
-namespace Tests\Db\Select\Parsing;
+namespace Tests\Db\Sql\Parsing;
 
 use PHPUnit\Framework\TestCase;
 use Tests\Mapping\Hydration\Car;
 use Tests\Mapping\Hydration\Engine;
-use Zend\Db\Adapter\Adapter;
 use Zend\Db\Sql\Expression;
-use Zend\Db\Sql\Platform\Platform;
 use Zend\Db\Sql\Select;
 use Zend\EntityMapper\Config\Container\Container;
-use Zend\EntityMapper\Db\Select\Parsing\SelectParser;
-use Zend\EntityMapper\Db\Select\Reflection\OperatorReflector;
-use Zend\EntityMapper\Db\Select\Reflection\SelectReflector;
+use Zend\EntityMapper\Db\Sql\Parsing\SelectParser;
+use Zend\EntityMapper\Db\Sql\Reflection\SelectReflector;
 use Zend\EntityMapper\Helper\MapLoader;
 
 /**
@@ -87,15 +84,7 @@ class SelectParsingTest extends TestCase
         $reflector = new SelectReflector($select);
         $parsedColumns = $reflector->getColumns();
 
-        $equals = 0;
-
-        foreach ($parsedColumns as $column) {
-            if($column instanceof Expression) {
-                $equals++;
-            }
-        }
-
-        $this->assertCount($equals, $parsedColumns);
+        $this->assertCount(2, $parsedColumns);
     }
 
     /**
