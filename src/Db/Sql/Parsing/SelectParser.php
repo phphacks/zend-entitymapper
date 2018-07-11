@@ -2,7 +2,6 @@
 
 namespace Zend\EntityMapper\Db\Sql\Parsing;
 
-use Zend\Db\Sql\Expression;
 use Zend\Db\Sql\Select;
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Entity;
@@ -228,24 +227,19 @@ class SelectParser
                 foreach ($rawObjectName as $alias => $class) {
                     $config = $this->container->get($class);
                     $joinClause['name'] = [$alias => $config->getTable()];
-                    $fields = $config->getFields();
                 }
             }
-            else {
-                $config = $this->container->get($rawObjectName);
-                $fields = $config->getFields();
-            }
 
-            foreach ($fields as $field) {
-                $joinClause['on'] = str_replace($field->getProperty(), $field->getAlias(), $joinClause['on']);
+            foreach ($this->fieldAliases as $property => $columnName) {
+                $joinClause['on'] = str_replace($property, $columnName, $joinClause['on']);
 
                 foreach ($joinClause['columns'] as $key => $column) {
-                    $joinClause['columns'][$key] = str_replace($field->getProperty(), $field->getAlias(), $joinClause['columns'][$key]);
+                    $joinClause['columns'][$key] = str_replace($property, $columnName, $joinClause['columns'][$key]);
                 }
             }
 
             $parsedJoinClauses[] = $joinClause;
-
+            $config = null;
         }
 
         $joinsReflection = new \ReflectionObject($joins);
