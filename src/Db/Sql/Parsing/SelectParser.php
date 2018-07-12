@@ -72,8 +72,6 @@ class SelectParser
         }
 
         $this->loadFieldAliases();
-
-        echo null;
     }
 
     /**
