@@ -45,7 +45,9 @@ class SelectSkeletonFactory implements SelectFactoryInterface
         $this->container     = $container;
         $this->entity        = $entity;
         $this->configuration = $this->container->get($entity);
-        $this->select        = new Select($entity);
+
+        $this->select = new Select();
+        $this->select->from($entity);
     }
 
     /**

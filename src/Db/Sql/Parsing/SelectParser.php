@@ -2,7 +2,9 @@
 
 namespace Zend\EntityMapper\Db\Sql\Parsing;
 
+use Zend\Db\Sql\Expression;
 use Zend\Db\Sql\Select;
+use Zend\Db\Sql\TableIdentifier;
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Entity;
 use Zend\EntityMapper\Config\ForeignKey;
@@ -81,6 +83,8 @@ class SelectParser
      */
     public function loadFieldAliases($entity = null, $namespace = null, $fk = null): void
     {
+        $initialNamespace = $namespace;
+
         if (is_null($entity)) {
             $entity = $this->entity;
         }
@@ -107,10 +111,19 @@ class SelectParser
                 $this->loadFieldAliases($entity, $namespace, $field->getForeignKey());
             }
             else if(!$field->isCollection()) {
+                $matches = [];
+                preg_match('/\.(.*?)\.(.*?)$/', $namespace, $matches);
+
+                if(count($matches) > 0) {
+                    $namespace = preg_replace('/\.(.*?)\.(.*?)$/', '.' . $field->getProperty(), $namespace);
+                }
+
                 $this->fieldAliases[$namespace] = $joinAlias . $field->getAlias();
             }
 
-            $namespace = null;
+            if (empty($initialNamespace)) {
+                $namespace = null;
+            }
         }
     }
 
@@ -154,7 +167,8 @@ class SelectParser
 
         foreach ($columns as $alias => $column) {
             if(isset($this->fieldAliases[$column])) {
-                $columns[$alias] = $this->fieldAliases[$column];
+                $columns[$column] = new Expression($this->fieldAliases[$column], null, [1]);
+                unset($columns[$alias]);
             }
         }
 
@@ -223,8 +237,12 @@ class SelectParser
 
             if(is_array($rawObjectName)) {
                 foreach ($rawObjectName as $alias => $class) {
-                    $config = $this->container->get($class);
-                    $joinClause['name'] = [$alias => $config->getTable()];
+                    if ($class instanceof TableIdentifier) {
+                        $joinClause['name'] = [$alias => $class];
+                    } else {
+                        $config = $this->container->get($class);
+                        $joinClause['name'] = [$alias => $config->getTable()];
+                    }
                 }
             }
 

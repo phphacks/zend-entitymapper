@@ -9,27 +9,29 @@ use Zend\Db\TableGateway\TableGateway;
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Db\Sql\Factory\Select\SelectSkeletonFactory;
 use Zend\EntityMapper\Db\Sql\Parsing\SelectParser;
+use Zend\EntityMapper\Mapping\Hydration\ArrayBreaker;
+use Zend\EntityMapper\Mapping\Hydration\Hydrator;
 
 /**
- * DatabaseGateway
+ * DynamicTableGateway
  *
  * @package Zend\EntityMapper\Db\Gateway
  */
-class DatabaseGateway
+class DynamicTableGateway
 {
     /**
      * Stores tablegateways used during the proccess.
      *
      * @var TableGateway[]
      */
-    private $tableGateways = [];
+    private static $tableGateways = [];
 
     /**
      * Stores entities configuration files.
      *
      * @var Container
      */
-    private $configurationContainer;
+    private static $configurationContainer;
 
     /**
      * Database adapter instance.
@@ -46,7 +48,7 @@ class DatabaseGateway
      */
     public function __construct(Adapter $adapter)
     {
-        $this->configurationContainer = new Container();
+        self::$configurationContainer = new Container();
         $this->adapter = $adapter;
     }
 
@@ -56,21 +58,22 @@ class DatabaseGateway
      */
     private function setUp(string $entity): void
     {
-        if (array_key_exists($entity, $this->tableGateways)) {
+        if (array_key_exists($entity, self::$tableGateways)) {
             return;
         }
 
-        $configuration = $this->configurationContainer->get($entity);
+        $configuration = self::$configurationContainer->get($entity);
         $tableIdentifier = $configuration->getTable();
 
         $tableGatewayFactory = new TableGatewayFactory($this->adapter);
-        $tableGateway = $tableGatewayFactory->create($tableIdentifier);
-        $this->tableGateways[$entity] = $tableGateway;
+        $tableGateway = $tableGatewayFactory->create($tableIdentifier->getTable(), $tableIdentifier->getSchema());
+        self::$tableGateways[$entity] = $tableGateway;
     }
 
     /**
      * @param string $entity
      * @param $select
+     * @return array
      * @throws \Zend\Cache\Exception\ExceptionInterface
      * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
      */
@@ -78,7 +81,7 @@ class DatabaseGateway
     {
         $this->setUp($entity);
 
-        $selectSkeletonFactory = new SelectSkeletonFactory($this->configurationContainer, $entity);
+        $selectSkeletonFactory = new SelectSkeletonFactory(self::$configurationContainer, $entity);
         $selectSkeleton = $selectSkeletonFactory->create();
 
         if ($select instanceof Select) {
@@ -99,16 +102,16 @@ class DatabaseGateway
         $selectParser->parseWhere();
         $select = $selectParser->parseOrder();
 
-        $this->tableGateways[$entity]->select($select);
-    }
+        $rowsToBeShown = [];
+        $rows = self::$tableGateways[$entity]->selectWith($select);
+        $hydrator = new Hydrator();
 
-    /**
-     * @param object $object
-     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
-     */
-    public function insert(object $object)
-    {
-        $entity = get_class($object);
-        $this->setUp($entity);
+        foreach ($rows as $row) {
+            $brokenRow = ArrayBreaker::break($row);
+            $subject = new $entity;
+            $rowsToBeShown[] = $hydrator->hydrate($brokenRow, $subject);
+        }
+
+        return $rowsToBeShown;
     }
 }
