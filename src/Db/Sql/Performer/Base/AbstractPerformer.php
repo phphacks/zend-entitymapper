@@ -2,6 +2,7 @@
 
 namespace Zend\EntityMapper\Db\Sql\Performer\Base;
 
+use Zend\Db\TableGateway\TableGateway;
 use Zend\Db\TableGateway\TableGatewayInterface;
 
 /**
@@ -12,7 +13,7 @@ use Zend\Db\TableGateway\TableGatewayInterface;
 abstract class AbstractPerformer implements PerformerInterface
 {
     /**
-     * @var TableGatewayInterface
+     * @var TableGateway
      */
     protected $tableGateway;
 

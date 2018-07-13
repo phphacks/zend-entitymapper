@@ -7,6 +7,7 @@ use Zend\Db\TableGateway\Factory\TableGatewayFactory;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Db\Sql\Factory\Select\SelectFactory;
+use Zend\EntityMapper\Db\Sql\Performer\InsertPerformer;
 use Zend\EntityMapper\Db\Sql\Performer\SelectPerformer;
 
 /**
@@ -88,5 +89,22 @@ class DynamicTableGateway
         $rows = $selectPerformer->perform($select);
 
         return $rows;
+    }
+
+    /**
+     * @param $object
+     * @return mixed
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    public function insert($object)
+    {
+        $entity = get_class($object);
+        $this->setUp($entity);
+
+        $insertPerformer = new InsertPerformer(self::$tableGateways[$entity]);
+        $object = $insertPerformer->perform($object);
+
+        return $object;
     }
 }

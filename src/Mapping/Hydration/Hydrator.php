@@ -15,6 +15,32 @@ use Zend\Filter\FilterInterface;
 class Hydrator implements HydratorInterface
 {
     /**
+     * @param $value
+     * @param $object
+     * @return mixed
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    public function hydratePrimaryKey($value, $object)
+    {
+        $container = new Container();
+        $reflection = new \ReflectionObject($object);
+
+        /** @var Entity $config */
+        $config = $container->get(get_class($object));
+
+        foreach ($config->getFields() as $field) {
+            if($field->isPrimaryKey()) {
+                $property = $reflection->getProperty($field->getProperty());
+                $property->setAccessible(true);
+                $property->setValue($object, $value);
+            }
+        }
+
+        return $object;
+    }
+
+    /**
      * @param array $data
      * @param object $object
      * @return object

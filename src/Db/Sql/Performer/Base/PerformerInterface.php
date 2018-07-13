@@ -17,7 +17,7 @@ interface PerformerInterface
     public function getTableGateway(): TableGatewayInterface;
 
     /**
-     * @param $select
+     * @param $command
      */
-    public function perform($select);
+    public function perform($command);
 }
