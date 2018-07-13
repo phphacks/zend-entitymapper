@@ -3,14 +3,11 @@
 namespace Zend\EntityMapper\Db\Gateway;
 
 use Zend\Db\Adapter\Adapter;
-use Zend\Db\Sql\Select;
 use Zend\Db\TableGateway\Factory\TableGatewayFactory;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\EntityMapper\Config\Container\Container;
-use Zend\EntityMapper\Db\Sql\Factory\Select\SelectSkeletonFactory;
-use Zend\EntityMapper\Db\Sql\Parsing\SelectParser;
-use Zend\EntityMapper\Mapping\Hydration\ArrayBreaker;
-use Zend\EntityMapper\Mapping\Hydration\Hydrator;
+use Zend\EntityMapper\Db\Sql\Factory\Select\SelectFactory;
+use Zend\EntityMapper\Db\Sql\Performer\SelectPerformer;
 
 /**
  * DynamicTableGateway
@@ -81,37 +78,15 @@ class DynamicTableGateway
     {
         $this->setUp($entity);
 
-        $selectSkeletonFactory = new SelectSkeletonFactory(self::$configurationContainer, $entity);
-        $selectSkeleton = $selectSkeletonFactory->create();
+        $selectFactory = new SelectFactory($entity);
+        $selectFactory->setContainer(self::$configurationContainer);
+        $selectFactory->setOverride($select);
+        $select = $selectFactory->create();
 
-        if ($select instanceof Select) {
-            $select = $selectSkeleton->combine($select);
-        }
-        else if (is_array($select)) {
-            $select = $selectSkeleton->where($select);
-        }
-        else if (is_callable($select)) {
-            $select($selectSkeleton);
-            $select = $selectSkeleton;
-        }
+        $selectPerformer = new SelectPerformer(self::$tableGateways[$entity]);
+        $selectPerformer->setEntity($entity);
+        $rows = $selectPerformer->perform($select);
 
-        $selectParser = new SelectParser($select);
-        $selectParser->parseFrom();
-        $selectParser->parseColumns();
-        $selectParser->parseJoin();
-        $selectParser->parseWhere();
-        $select = $selectParser->parseOrder();
-
-        $rowsToBeShown = [];
-        $rows = self::$tableGateways[$entity]->selectWith($select);
-        $hydrator = new Hydrator();
-
-        foreach ($rows as $row) {
-            $brokenRow = ArrayBreaker::break($row);
-            $subject = new $entity;
-            $rowsToBeShown[] = $hydrator->hydrate($brokenRow, $subject);
-        }
-
-        return $rowsToBeShown;
+        return $rows;
     }
 }

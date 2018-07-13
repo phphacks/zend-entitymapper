@@ -88,7 +88,6 @@ class DynamicTableGatewayTest extends TestCase
      */
     public function testSelect()
     {
-
         $driver = (new MockBuilder($this, DriverInterface::class))->disableOriginalConstructor()->getMock();
         $driver->method('createStatement')->willReturn(new StatementContainer());
         $adapter = new Adapter($driver);
