@@ -54,7 +54,9 @@ class Extractor
 
         foreach ($fields as $field) {
             if(!$field->isForeignKey() && !$field->isCollection()){
-                $array[$field->getAlias()] = $reflection->getProperty($field->getProperty())->getValue($object);
+                $property = $reflection->getProperty($field->getProperty());
+                $property->setAccessible(true);
+                $array[$field->getAlias()] = $property->getValue($object);
             }
         }
 
