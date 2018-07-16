@@ -7,6 +7,7 @@ use Zend\Db\TableGateway\Factory\TableGatewayFactory;
 use Zend\Db\TableGateway\TableGateway;
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Db\Sql\Factory\Select\SelectFactory;
+use Zend\EntityMapper\Db\Sql\Performer\DeletePerformer;
 use Zend\EntityMapper\Db\Sql\Performer\InsertPerformer;
 use Zend\EntityMapper\Db\Sql\Performer\SelectPerformer;
 use Zend\EntityMapper\Db\Sql\Performer\UpdatePerformer;
@@ -168,6 +169,36 @@ class DynamicTableGateway
         }
 
         return $response[0];
+    }
+
+    /**
+     * @param array $objects
+     * @return bool
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    public function deleteArray(array $objects): bool
+    {
+        foreach ($objects as $object) {
+            $entity = get_class($object);
+            $this->setUp($entity);
+
+            $deletePerformer = new DeletePerformer(self::$tableGateways[$entity]);
+            $deletePerformer->perform($object);
+        }
+
+        return true;
+    }
+
+    /**
+     * @param $object
+     * @return bool
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    public function delete($object): bool
+    {
+        return $this->deleteArray([$object]);
     }
 
 }
