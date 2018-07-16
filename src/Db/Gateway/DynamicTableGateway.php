@@ -9,6 +9,7 @@ use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Db\Sql\Factory\Select\SelectFactory;
 use Zend\EntityMapper\Db\Sql\Performer\InsertPerformer;
 use Zend\EntityMapper\Db\Sql\Performer\SelectPerformer;
+use Zend\EntityMapper\Db\Sql\Performer\UpdatePerformer;
 
 /**
  * DynamicTableGateway
@@ -92,6 +93,28 @@ class DynamicTableGateway
     }
 
     /**
+     * @param array $objects
+     * @return array
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    public function insertArray(array $objects): array
+    {
+        $response = [];
+
+        foreach ($objects as $object) {
+            $entity = get_class($object);
+            $this->setUp($entity);
+
+            $insertPerformer = new InsertPerformer(self::$tableGateways[$entity]);
+            $object = $insertPerformer->perform($object);
+            $response[] = $object;
+        }
+
+        return $response;
+    }
+
+    /**
      * @param $object
      * @return mixed
      * @throws \Zend\Cache\Exception\ExceptionInterface
@@ -99,12 +122,52 @@ class DynamicTableGateway
      */
     public function insert($object)
     {
-        $entity = get_class($object);
-        $this->setUp($entity);
+        $response = $this->insertArray([$object]);
 
-        $insertPerformer = new InsertPerformer(self::$tableGateways[$entity]);
-        $object = $insertPerformer->perform($object);
+        if (count($response) == 0) {
+            return null;
+        }
 
-        return $object;
+        return $response[0];
     }
+
+    /**
+     * @param array $objects
+     * @return array
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    public function updateArray(array $objects): array
+    {
+        $response = [];
+
+        foreach ($objects as $object) {
+            $entity = get_class($object);
+            $this->setUp($entity);
+
+            $updatePerformer = new UpdatePerformer(self::$tableGateways[$entity]);
+            $object = $updatePerformer->perform($object);
+            $response[] = $object;
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param $object
+     * @return mixed|null
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    public function update($object)
+    {
+        $response = $this->updateArray([$object]);
+
+        if (count($response) == 0) {
+            return null;
+        }
+
+        return $response[0];
+    }
+
 }

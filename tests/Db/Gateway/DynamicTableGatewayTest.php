@@ -9,9 +9,13 @@ use Tests\Mapping\Hydration\Engine;
 use Zend\Db\Adapter\Adapter;
 use Zend\Db\Adapter\Driver\DriverInterface;
 use Zend\Db\Adapter\Driver\Mysqli\Connection;
+use Zend\Db\Adapter\Driver\Mysqli\Mysqli;
 use Zend\Db\Adapter\Driver\Mysqli\Result;
 use Zend\Db\Adapter\ParameterContainer;
+use Zend\Db\Adapter\Platform\PlatformInterface;
 use Zend\Db\Adapter\StatementContainerInterface;
+use Zend\Db\Sql\Platform\Mysql\Mysql;
+use Zend\Db\Sql\Platform\Platform;
 use Zend\Db\Sql\Select;
 use Zend\EntityMapper\Db\Gateway\DynamicTableGateway;
 use Zend\EntityMapper\Helper\MapLoader;
@@ -25,6 +29,12 @@ class StatementContainer implements StatementContainerInterface {
 
     private $sql;
     private $container;
+    private $result;
+
+    public function __construct($result = null)
+    {
+        $this->result = $result;
+    }
 
     public function setSql($sql)
     {
@@ -64,10 +74,122 @@ class StatementContainer implements StatementContainerInterface {
 
     public function execute()
     {
+        if(!empty($this->result)) {
+            return $this->result;
+        }
+
         return [];
     }
 }
 
+class MyPlatform extends Mysql implements PlatformInterface
+{
+    public function getName()
+    {
+        return 'xablau';
+    }
+
+    /**
+     * Get quote identifier symbol
+     *
+     * @return string
+     */
+    public function getQuoteIdentifierSymbol()
+    {
+        return '';
+    }
+
+    /**
+     * Quote identifier
+     *
+     * @param  string $identifier
+     * @return string
+     */
+    public function quoteIdentifier($identifier)
+    {
+        return $identifier;
+    }
+
+    /**
+     * Quote identifier chain
+     *
+     * @param string|string[] $identifierChain
+     * @return string
+     */
+    public function quoteIdentifierChain($identifierChain)
+    {
+        return '';
+    }
+
+    /**
+     * Get quote value symbol
+     *
+     * @return string
+     */
+    public function getQuoteValueSymbol()
+    {
+        return '';
+    }
+
+    /**
+     * Quote value
+     *
+     * Will throw a notice when used in a workflow that can be considered "unsafe"
+     *
+     * @param  string $value
+     * @return string
+     */
+    public function quoteValue($value)
+    {
+        return $value;
+    }
+
+    /**
+     * Quote Trusted Value
+     *
+     * The ability to quote values without notices
+     *
+     * @param $value
+     * @return mixed
+     */
+    public function quoteTrustedValue($value)
+    {
+        return $value;
+    }
+
+    /**
+     * Quote value list
+     *
+     * @param string|string[] $valueList
+     * @return string
+     */
+    public function quoteValueList($valueList)
+    {
+        return '';
+    }
+
+    /**
+     * Get identifier separator
+     *
+     * @return string
+     */
+    public function getIdentifierSeparator()
+    {
+        return '';
+    }
+
+    /**
+     * Quote identifier in fragment
+     *
+     * @param  string $identifier
+     * @param  array $additionalSafeWords
+     * @return string
+     */
+    public function quoteIdentifierInFragment($identifier, array $additionalSafeWords = [])
+    {
+        return '';
+    }
+}
 
 /**
  * DynamicTableGatewayTest
@@ -92,7 +214,7 @@ class DynamicTableGatewayTest extends TestCase
      */
     public function testSelect()
     {
-        $driver = (new MockBuilder($this, DriverInterface::class))->disableOriginalConstructor()->getMock();
+        $driver = $this->createMock(DriverInterface::class);
         $driver->method('createStatement')->willReturn(new StatementContainer());
         $adapter = new Adapter($driver);
 
@@ -115,20 +237,37 @@ class DynamicTableGatewayTest extends TestCase
     {
         $lastInsertId = 19950405;
 
-        $connection = (new MockBuilder($this, Connection::class))->getMock();
+        $connection = $this->createMock(Connection::class);
         $connection->method('getLastGeneratedValue')->willReturn($lastInsertId);
 
-        $result = (new MockBuilder($this, Result::class))->getMock();
+        $result = $this->createMock(Result::class);
         $result->method('getAffectedRows')->willReturn(1);
 
-        $statementContainer = (new MockBuilder($this, StatementContainer::class))->getMock();
+        $statementContainer = $this->createMock(StatementContainer::class);
         $statementContainer->method('execute')->willReturn($result);
 
-        $driver = (new MockBuilder($this, DriverInterface::class))->disableOriginalConstructor()->getMock();
+        $driver = $this->createMock(Mysqli::class);
         $driver->method('createStatement')->willReturn($statementContainer);
         $driver->method('getConnection')->willReturn($connection);
 
-        $adapter = new Adapter($driver);
+        $adapter = $this
+            ->getMockBuilder(Adapter::class)
+            ->setConstructorArgs([$driver])
+            ->getMock();
+
+        $platform = $this
+            ->getMockBuilder(MyPlatform::class)
+            ->setConstructorArgs([$adapter])
+            ->getMock();
+
+        $platform->method('prepareStatement')
+            ->willReturn($statementContainer);
+
+        $adapter->method('getPlatform')
+            ->willReturn($platform);
+
+        $adapter->method('getDriver')
+            ->willReturn($driver);
 
         $engine = new Engine();
         $engine->cm3 = 3;
@@ -139,69 +278,5 @@ class DynamicTableGatewayTest extends TestCase
         $dynamicTableGateway->insert($engine);
 
         $this->assertEquals($lastInsertId, $engine->id);
-    }
-
-    /**
-     * @throws \Zend\Cache\Exception\ExceptionInterface
-     */
-    public function testUpdate()
-    {
-        $lastInsertId = 19950405;
-
-        $connection = (new MockBuilder($this, Connection::class))->getMock();
-        $connection->method('getLastGeneratedValue')->willReturn($lastInsertId);
-
-        $result = (new MockBuilder($this, Result::class))->getMock();
-        $result->method('getAffectedRows')->willReturn(1);
-
-        $statementContainer = (new MockBuilder($this, StatementContainer::class))->getMock();
-        $statementContainer->method('execute')->willReturn($result);
-
-        $driver = (new MockBuilder($this, DriverInterface::class))->disableOriginalConstructor()->getMock();
-        $driver->method('createStatement')->willReturn($statementContainer);
-        $driver->method('getConnection')->willReturn($connection);
-
-        $adapter = new Adapter($driver);
-
-        $engine = new Engine();
-        $engine->id = 1;
-        $engine->cm3 = 3;
-        $engine->pistons = 6;
-        $engine->horsepower = 300;
-
-        $dynamicTableGateway = new DynamicTableGateway($adapter);
-        $dynamicTableGateway->update($engine);
-    }
-
-    /**
-     * @throws \Zend\Cache\Exception\ExceptionInterface
-     */
-    public function testDelete()
-    {
-        $lastInsertId = 19950405;
-
-        $connection = (new MockBuilder($this, Connection::class))->getMock();
-        $connection->method('getLastGeneratedValue')->willReturn($lastInsertId);
-
-        $result = (new MockBuilder($this, Result::class))->getMock();
-        $result->method('getAffectedRows')->willReturn(1);
-
-        $statementContainer = (new MockBuilder($this, StatementContainer::class))->getMock();
-        $statementContainer->method('execute')->willReturn($result);
-
-        $driver = (new MockBuilder($this, DriverInterface::class))->disableOriginalConstructor()->getMock();
-        $driver->method('createStatement')->willReturn($statementContainer);
-        $driver->method('getConnection')->willReturn($connection);
-
-        $adapter = new Adapter($driver);
-
-        $engine = new Engine();
-        $engine->id = 1;
-        $engine->cm3 = 3;
-        $engine->pistons = 6;
-        $engine->horsepower = 300;
-
-        $dynamicTableGateway = new DynamicTableGateway($adapter);
-        $dynamicTableGateway->delete($engine);
     }
 }
