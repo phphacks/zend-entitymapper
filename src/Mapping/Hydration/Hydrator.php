@@ -68,6 +68,7 @@ class Hydrator implements HydratorInterface
                 $foreignKey = $propertyConfig->getForeignKey();
                 $entityClass = $foreignKey->getEntityClass();
                 $foreignKeyObject = $this->hydrate($data[$propertyAlias], new $entityClass);
+                $property->setAccessible(true);
                 $property->setValue($object, $foreignKeyObject);
                 continue;
             }
