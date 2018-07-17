@@ -2,8 +2,6 @@
 
 namespace Zend\EntityMapper\Config;
 
-use Zend\Filter\FilterInterface;
-
 /**
  * Field
  *
@@ -97,17 +95,17 @@ class Field
     }
 
     /**
-     * @return string
+     * @return string|object
      */
-    public function getInputFilter(): string
+    public function getInputFilter()
     {
         return $this->inputFilter;
     }
 
     /**
-     * @param string $inputFilter
+     * @param string|object $inputFilter
      */
-    public function setInputFilter(string $inputFilter)
+    public function setInputFilter($inputFilter)
     {
         $this->inputFilter = $inputFilter;
     }
@@ -117,21 +115,21 @@ class Field
      */
     public function hasInputFilter(): bool
     {
-        return (!empty($this->inputFilter)) && class_exists($this->inputFilter);
+        return (!empty($this->inputFilter)) || class_exists($this->inputFilter);
     }
 
     /**
-     * @return string
+     * @return string|object
      */
-    public function getOutputFilter(): string
+    public function getOutputFilter()
     {
         return $this->outputFilter;
     }
 
     /**
-     * @param string $outputFilter
+     * @param string|object $outputFilter
      */
-    public function setOutputFilter(string $outputFilter)
+    public function setOutputFilter($outputFilter)
     {
         $this->outputFilter = $outputFilter;
     }
@@ -141,7 +139,7 @@ class Field
      */
     public function hasOutputFilter(): bool
     {
-        return (!empty($this->outputFilter)) && class_exists($this->outputFilter);
+        return (!empty($this->outputFilter)) || class_exists($this->outputFilter);
     }
 
     /**

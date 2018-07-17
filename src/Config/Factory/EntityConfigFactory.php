@@ -5,7 +5,6 @@ namespace Zend\EntityMapper\Config\Factory;
 use Zend\Config\Config;
 use Zend\Db\Sql\TableIdentifier;
 use Zend\EntityMapper\Config\Collection;
-use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Entity;
 use Zend\EntityMapper\Config\Exceptions\ConfigurationException;
 use Zend\EntityMapper\Config\Field;
@@ -30,10 +29,11 @@ class EntityConfigFactory
     private $config;
 
     /**
-     * ConfigFactory constructor.
+     * EntityConfigFactory constructor.
      *
      * @param array $configArray
      * @throws ConfigurationException
+     * @throws \Zend\Cache\Exception\ExceptionInterface
      */
     public function __construct(array $configArray)
     {
@@ -51,10 +51,8 @@ class EntityConfigFactory
     }
 
     /**
-     * Merge $rawConfig into $config
-     *
-     * @return void
      * @throws ConfigurationException
+     * @throws \Zend\Cache\Exception\ExceptionInterface
      */
     public function mergeEntity(): void
     {
@@ -81,6 +79,7 @@ class EntityConfigFactory
 
     /**
      * @param array $fieldConfig
+     * @throws \Zend\Cache\Exception\ExceptionInterface
      */
     public function mergeField(array $fieldConfig)
     {
