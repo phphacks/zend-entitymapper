@@ -80,10 +80,13 @@ class Hydrator implements HydratorInterface
 
             // Filter the data
             if($propertyConfig->hasInputFilter()) {
-                $inputFilterClass = $propertyConfig->getInputFilter();
 
-                /** @var FilterInterface $inputFilter */
-                $inputFilter = new $inputFilterClass;
+                /** @var FilterInterface $outputFilter */
+                $inputFilter = $propertyConfig->getInputFilter();
+                if(is_string($inputFilter) && class_exists($inputFilter)) {
+                    $inputFilter = new $inputFilter;
+                }
+
                 $filtered = $inputFilter->filter($data[$propertyAlias]);
                 $property->setValue($object, $filtered);
                 continue;

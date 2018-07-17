@@ -5,6 +5,7 @@ namespace Zend\EntityMapper\Mapping\Extraction;
 use Zend\EntityMapper\Config\Container\Container;
 use Zend\EntityMapper\Config\Entity;
 use Zend\EntityMapper\Config\Field;
+use Zend\Filter\FilterInterface;
 
 /**
  * Extractor
@@ -42,11 +43,12 @@ class Extractor
 
     /**
      * @param $object
+     * @param bool $ignoreFilter
      * @return array
      * @throws \Zend\Cache\Exception\ExceptionInterface
      * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
      */
-    public function extract($object): array
+    public function extract($object, $ignoreFilter = false): array
     {
         $fields = $this->getFields($object);
         $reflection = new \ReflectionObject($object);
@@ -56,7 +58,20 @@ class Extractor
             if(!$field->isForeignKey() && !$field->isCollection()){
                 $property = $reflection->getProperty($field->getProperty());
                 $property->setAccessible(true);
-                $array[$field->getAlias()] = $property->getValue($object);
+
+                $value = $property->getValue($object);
+
+                if($field->hasOutputFilter() && $ignoreFilter === false) {
+                    /** @var FilterInterface $outputFilter */
+                    $outputFilter = $field->getOutputFilter();
+                    if(is_string($outputFilter) && class_exists($outputFilter)) {
+                        $outputFilter = new $outputFilter;
+                    }
+
+                    $value = $outputFilter->filter($value);
+                }
+
+                $array[$field->getAlias()] = $value;
             }
         }
 
