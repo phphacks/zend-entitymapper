@@ -62,6 +62,7 @@ class Hydrator implements HydratorInterface
             $propertyName = $property->getName();
             $propertyConfig = $config->getField($propertyName);
             $propertyAlias = $propertyConfig->getAlias();
+            $property->setAccessible(true);
 
             // Populate foreignKey
             if ($propertyConfig->isForeignKey()) {

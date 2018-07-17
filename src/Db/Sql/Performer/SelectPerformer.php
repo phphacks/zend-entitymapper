@@ -59,7 +59,7 @@ class SelectPerformer extends AbstractPerformer
      */
     public function perform($select): array
     {
-        $rows = $this->tableGateway->selectWith($select);
+        $rows = $this->tableGateway->selectWith($select)->toArray();
         $rowsToBeShown = [];
 
         foreach ($rows as $row) {
