@@ -16,6 +16,7 @@ class Extractor
 {
     private $lastObjectType = '';
     private $fields = [];
+    private $outputFilters = [];
 
     /**
      * @param $object
@@ -73,7 +74,11 @@ class Extractor
                 if($field->hasOutputFilter() && $ignoreFilter === false) {
                     /** @var FilterInterface $outputFilter */
                     $outputFilter = $field->getOutputFilter();
-                    if(is_string($outputFilter) && class_exists($outputFilter)) {
+
+                    if(in_array($outputFilter, $this->outputFilters)) {
+                        $outputFilter = $this->outputFilters[$outputFilter];
+                    }
+                    else if(is_string($outputFilter) && class_exists($outputFilter)) {
                         $outputFilter = new $outputFilter;
                     }
 
