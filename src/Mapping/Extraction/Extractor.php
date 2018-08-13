@@ -14,6 +14,9 @@ use Zend\Filter\FilterInterface;
  */
 class Extractor
 {
+    private $lastObjectType = '';
+    private $fields = [];
+
     /**
      * @param $object
      * @return Entity
@@ -50,8 +53,14 @@ class Extractor
      */
     public function extract($object, $ignoreFilter = false): array
     {
-        $fields = $this->getFields($object);
+        if(get_class($object) != $this->lastObjectType)
+        {
+            $this->fields = $this->getFields($object);
+            $this->lastObjectType = get_class($object);
+        }
+
         $reflection = new \ReflectionObject($object);
+        $fields = &$this->fields;
         $array = [];
 
         foreach ($fields as $field) {
