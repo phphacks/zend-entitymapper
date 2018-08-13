@@ -14,6 +14,42 @@ use Zend\Filter\FilterInterface;
  */
 class Hydrator implements HydratorInterface
 {
+    private $configs = [];
+    private $inputFilters = [];
+
+    /**
+     * @param $object
+     * @return null|Entity
+     * @throws \Zend\Cache\Exception\ExceptionInterface
+     * @throws \Zend\EntityMapper\Config\Container\Exceptions\ItemNotFoundException
+     */
+    private function getConfig($object)
+    {
+        $config = null;
+
+        $class = $object;
+        if(is_object($object)) {
+            $class = get_class($object);
+        }
+
+        if(isset($this->configs[$class])) {
+            /** @var Entity $config */
+            $config = $this->configs[$class];
+        }
+        else
+        {
+            $container = new Container();
+
+            /** @var Entity $config */
+            $config = $container->get($class);
+
+            $this->configs[$class] = $config;
+        }
+
+        return $config;
+    }
+
+
     /**
      * @param $value
      * @param $object
@@ -23,11 +59,9 @@ class Hydrator implements HydratorInterface
      */
     public function hydratePrimaryKey($value, $object)
     {
-        $container = new Container();
-        $reflection = new \ReflectionObject($object);
+        $config = $this->getConfig($object);
 
-        /** @var Entity $config */
-        $config = $container->get(get_class($object));
+        $reflection = new \ReflectionObject($object);
 
         foreach ($config->getFields() as $field) {
             if($field->isPrimaryKey()) {
@@ -49,10 +83,7 @@ class Hydrator implements HydratorInterface
      */
     public function hydrate(array $data, $object)
     {
-        $container = new Container();
-
-        /** @var Entity $config */
-        $config = $container->get(get_class($object));
+        $config = $this->getConfig($object);
 
         $reflectionObject = new \ReflectionObject($object);
         $objectProperties = $reflectionObject->getProperties();
